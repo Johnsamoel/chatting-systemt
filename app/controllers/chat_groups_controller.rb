@@ -1,6 +1,6 @@
 class ChatGroupsController < ActionController::API
   require 'jwt'
-  before_action :validate_token_and_find_application, only: [:find_application]
+  before_action :validate_token_and_find_application, only: [:find_application, :update, :get_chats ]
 
   def create
     find_app = Application.find_by(name: application_params[:name])
@@ -19,16 +19,52 @@ class ChatGroupsController < ActionController::API
     end
   end
 
+  def update
+    updated_app = @found_application.update(name: application_params[:name])
+
+    if updated_app
+      render json: { message: "Application was updated successfully", application: updated_app }
+    else
+      render json: { error: "Something went wrong. Your application failed to update." }
+    end
+  end
+
+  def find_applications
+    page = params[:page] || 1
+    per_page = params[:per_page] || 10
+
+    applications = Application.paginate(page: page, per_page: per_page)
+
+    if applications
+      render json: { applications: applications }
+    else
+      render json: {error: "something went wrong"} , status: :not_found
+    end
+  end
+  
+  def get_chats
+    page = params[:page] || 1
+    per_page = params[:per_page] || 10
+
+    chats = @found_application.chats.paginate(page: page, per_page: per_page)
+
+    if chats
+      render json: { chats: chats }
+    else
+      render json: {error: "something went wrong"} , status: :not_found
+    end
+  
+  end
 
   def find_application
     render json: { application: @found_application }
   end
 
   private
-  def application_params
-    params.permit(:name, :token)
-  end
 
+  def application_params
+    params.permit(:name, :token, :page)
+  end
 
   # Helper method to create application token
   def generate_jwt_token
