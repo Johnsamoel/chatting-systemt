@@ -19,6 +19,8 @@ gem 'rack-cors', require: 'rack/cors'
 gem 'elasticsearch-rails', '~> 7.1'
 gem 'elasticsearch-api', '~> 7.1'
 
+# Gemfile
+gem 'elasticsearch-model'
 
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
