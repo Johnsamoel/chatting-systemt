@@ -10,13 +10,23 @@ class CreateChatJob
 
   def perform(chat_params)
     begin
-      newChat = Chat.create!(chat_params)
-  
+      new_chat = Chat.create!(chat_params)
+
+      # Store the created chat ID in Redis
+      store_chat_id_in_redis(new_chat.id)
+
     rescue StandardError => e
       # Log the error or handle it appropriately
       Rails.logger.error("Error creating chat: #{e.message}")
       raise
     end
+  end
+
+  private
+
+  def store_chat_id_in_redis(chat_id)
+    redis = Redis.new
+    redis.set("lastest_chat_number", chat_id)
   end
 
 end

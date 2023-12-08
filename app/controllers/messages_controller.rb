@@ -6,14 +6,21 @@ class MessagesController < ActionController::API
   # before_action :validate_find_message, only: [:find_message]
 
   def create
-    CreateMessageJob.perform_async({
+    CreateMessageJob.perform_sync({
       'body'=> @message_body,
-     'number'=> (@chat.messages_count || 0) ,
-     'application_id' => params[:application_id],
-      'number' => params[:chat_number] 
+     'application_id' => @found_application.id,
+      'chat_id' => @chat.id,
     })
 
-    render json: {message: "Message creation started"}
+    redis = Redis.new
+    message_number = redis.get("latest_message_number")
+
+    if message_number
+      render json: { chat_number: message_number }
+    else
+      render json: { error: "Message wasn't created" }, status: :bad_request
+    end
+   
   end
 
   # def find_message

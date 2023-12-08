@@ -9,9 +9,16 @@ class ChatsController < ActionController::API
 
   def create
     created_name = params.dig(:chat, :name)
-    CreateChatJob.perform_async({ 'chat_name' => created_name, 'application_id' => @found_application.id } )
+    CreateChatJob.perform_sync({ 'chat_name' => created_name, 'application_id' => @found_application.id } )
+    
+    redis = Redis.new
+    chat_number = redis.get("lastest_chat_number")
 
-    render json: { message: "Chat creation started" }
+    if chat_number
+      render json: { chat_number: chat_number }
+    else
+      render json: { error: "Chat wasn't created" }, status: :bad_request
+    end
   end
 
 
