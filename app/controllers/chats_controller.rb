@@ -6,17 +6,14 @@ class ChatsController < ActionController::API
   before_action :validate_update, only: [:update]
   before_action :validate_get_messages, only: [:get_messages]
 
+
   def create
     created_name = params.dig(:chat, :name)
-    @chat = Chat.new(chat_name: created_name, application_id: @found_application.id)
+    CreateChatJob.perform_async({ 'chat_name' => created_name, 'application_id' => @found_application.id } )
 
-    if @chat.save
-      @found_application.increment!(:chats_count)
-      render json: { chat_number: @chat.id }
-    else
-      render json: { error: "Failed to create chat", errors: @chat.errors.full_messages }, status: :unprocessable_entity
-    end
+    render json: { message: "Chat creation started" }
   end
+
 
   def update
     updated_chat = @chat.update({chat_name: @chat_name})

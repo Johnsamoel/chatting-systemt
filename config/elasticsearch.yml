@@ -1,0 +1,10 @@
+development:
+  hosts:
+    - 'http://localhost:9200'
+  apikey: 'VzFTYlJJd0JzVFl4ZjJMSXJRWDI6M01BMU5nNjlTT2UxUzhxZHZoYmJKUQ=='
+
+test:
+  host: 'localhost:9200'
+
+production:
+  host: 'your_production_elasticsearch_server:9200'

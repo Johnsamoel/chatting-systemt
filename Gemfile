@@ -16,12 +16,10 @@ gem "puma", ">= 5.0"
 
 gem 'rack-cors', require: 'rack/cors'
 
-gem 'elasticsearch-rails', '~> 7.1'
-gem 'elasticsearch-api', '~> 7.1'
 
-# Gemfile
-gem 'elasticsearch-model'
 
+gem 'elasticsearch', '~> 8.11'
+# # Gemfile
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 
@@ -62,3 +60,10 @@ group :development do
   # gem "spring"
 end
 
+gem "elasticsearch-model", "~> 7.1"
+
+gem "searchkick", "~> 5.3"
+
+gem "elasticsearch-rails", "~> 7.2"
+
+gem "redis", "~> 5.0"
