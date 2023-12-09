@@ -18,7 +18,8 @@ gem 'rack-cors', require: 'rack/cors'
 
 
 
-gem 'elasticsearch', '~> 8.11'
+gem 'elasticsearch', '~> 7.17.7'
+
 # # Gemfile
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
@@ -69,3 +70,5 @@ gem "elasticsearch-rails", "~> 7.2"
 gem "redis", "~> 5.0"
 
 gem "rufus-scheduler", "~> 3.9"
+
+gem "faraday", "~> 2.7"

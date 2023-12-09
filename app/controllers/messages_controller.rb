@@ -3,7 +3,7 @@
 class MessagesController < ActionController::API
   
   before_action :validate_create_message, only: [:create]
-  # before_action :validate_find_message, only: [:find_message]
+  before_action :validate_Search, only: [:search]
 
   def create
     CreateMessageJob.perform_sync({
@@ -23,14 +23,20 @@ class MessagesController < ActionController::API
    
   end
 
-  # def find_message
-  #   @chat = Chat.find_by(application_id: @found_application.id, chat_number: @chat_id)
-
-  #   # Perform Elasticsearch search
-  #   @messages = Message.search("just")
-
-  #   render json: @messages
-  # end
+  def search
+    @chat = Chat.find_by(application_id: @found_application.id, chat_number: @chat_id)
+  
+    page_number = @page_number.to_i
+    # Perform Elasticsearch search
+    @messages = Message.search(@message_body, page: @page_number.to_i)
+  
+    if @messages
+      render json: @messages
+    else
+      render json: { error: "Invalid search query" }, status: :not_found
+    end
+  end
+  
 
   private
 
@@ -38,10 +44,12 @@ class MessagesController < ActionController::API
     params.permit(:message , :chat_id , :token )
   end
 
-  def validate_find_message
+  def validate_Search
     token = params[:token]
     @message_body = params[:message]
     @chat_id = params[:chat_id]
+    @page_number = params[:page]
+
 
     validate_token(token)
     find_chat(@chat_id)
