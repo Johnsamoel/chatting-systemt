@@ -67,3 +67,5 @@ gem "searchkick", "~> 5.3"
 gem "elasticsearch-rails", "~> 7.2"
 
 gem "redis", "~> 5.0"
+
+gem "rufus-scheduler", "~> 3.9"

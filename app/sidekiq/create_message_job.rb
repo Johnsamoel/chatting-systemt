@@ -11,7 +11,7 @@ class CreateMessageJob
   def perform(message_params)
     begin
 
-      new_message = Message.create!(body: message_params['body'], chat_id: (message_params['chat_id'] + 1))
+      new_message = Message.create!(body: message_params['body'], chat_id: message_params['chat_id'])
     
       store_Message_id_in_redis(new_message.id)
     rescue StandardError => e
