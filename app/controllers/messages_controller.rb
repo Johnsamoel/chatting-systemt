@@ -4,6 +4,7 @@ class MessagesController < ActionController::API
   
   before_action :validate_create_message, only: [:create]
   before_action :validate_Search, only: [:search]
+  before_action :validate_update_message, only: [:update]
 
   def create
     CreateMessageJob.perform_sync({
@@ -36,8 +37,33 @@ class MessagesController < ActionController::API
       render json: { error: "Invalid search query" }, status: :not_found
     end
   end
-  
 
+  def update
+    if @message_body.nil?
+      render json: { error: "Invalid message body" }, status: :bad_request
+    else
+      begin
+        updated_Message_status = UpdateMessageJob.perform_sync({
+          'body' => @message_body,
+          'message_number' => @message.id,
+          'chat_number' => @chat.id, 
+        })
+  
+        if updated_Message_status
+          render json: { message: "Message was updated successfully" }
+        else
+          render json: { error: "Something went wrong during the update. Please try again." }, status: :unprocessable_entity
+        end
+      
+      rescue UpdateMessageJob::UpdateFailedError => e
+        render json: { error: "Message update failed. Please try again later." }, status: :unprocessable_entity
+      end
+    
+    end
+  end
+  
+  
+  
   private
 
   def messages_params
@@ -50,13 +76,24 @@ class MessagesController < ActionController::API
     @chat_id = params[:chat_id]
     @page_number = params[:page]
 
-
     validate_token(token)
     find_chat(@chat_id)
   end
 
+  def validate_update_message
+    token = params[:token]
+    @message_id = params[:message_number]
+    @chat_id = params[:chat_id]
+    @message_body = params[:body]
+
+    validate_token(token)
+    find_chat(@chat_id)
+    find_message(@message_id)
+  end
+
   def validate_create_message
     token = params[:token]
+    @message_id = params[:message_id]
     @message_body = params[:message]
     @chat_id = params[:chat_id]
 
@@ -76,6 +113,13 @@ class MessagesController < ActionController::API
 
   def render_error(message, status)
     render json: { error: message }, status: status
+  end
+
+  def find_message(message_id)
+    @message = Message.find(@message_id) if @message_id
+    if !@message
+      render json: {error: "Invalid token or Message number"} ,status: :not_found
+    end
   end
 
 end

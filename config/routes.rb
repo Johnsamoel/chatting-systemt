@@ -15,8 +15,8 @@ Rails.application.routes.draw do
 
   # message
   post '/chat/messages/create' => 'messages#create' 
-  get '/chat/:chat_id/messages/search' => 'messages#search' 
-
+  get  '/chat/:chat_id/messages/search' => 'messages#search' 
+  patch '/chat/:chat_id/messages/update' => 'messages#update'
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
 

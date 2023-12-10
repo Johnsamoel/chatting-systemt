@@ -1,31 +1,37 @@
 require 'elasticsearch/model'
 
 class Message < ApplicationRecord
-
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
-  searchkick
 
   belongs_to :chat, counter_cache: true
-  # include Searchable
+
+  validates :lock_version, presence: true
 
   def self.search(query, page: 1)
     size = 10
-    from = (page - 1) * size  # Calculate the correct 'from' value
+    from = (page - 1) * size
   
     __elasticsearch__.search(
       query: {
-        multi_match: {
-          query: query,
-          fields: ['body']
+        wildcard: {
+          body: {
+            value: "*#{query}*"
+          }
         }
       },
       size: size,
       from: from
     )
   end
-  
-  
-  
+
+
+  def update_with_optimistic_lock(attributes)
+    update!(attributes)
+  rescue ActiveRecord::StaleObjectError
+    # Handle the conflict, e.g., by reloading the record and trying again
+    reload
+    retry
+  end
   
 end
