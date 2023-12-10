@@ -23,12 +23,23 @@ class ChatsController < ActionController::API
 
 
   def update
-    updated_chat = @chat.update({chat_name: @chat_name})
-    if updated_chat
+
+    update_chat_job = UpdateChatJob.perform_sync({
+      'name' => @chat_name,
+      'app_number' => @found_application.id,
+      'chat_number' => @chat_id
+    })
+
+
+    if update_chat_job
       render json: { message: "Chat updated successfully" }
     else
       render json: { error: "Failed to update chat", errors: @chat.errors.full_messages }, status: :unprocessable_entity
     end
+  
+    rescue UpdateMessageJob::UpdateFailedError => e
+        render json: { error: "Chat update failed. Please try again later." }, status: :unprocessable_entity
+    
   end
 
   def get_messages

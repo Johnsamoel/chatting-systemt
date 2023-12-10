@@ -1,7 +1,7 @@
 class UpdateMessageJob
   include Sidekiq::Job
 
-  MAX_RETRIES = 2  # Define your maximum retry count
+  MAX_RETRIES = 2  
 
   sidekiq_options retry: MAX_RETRIES
 
