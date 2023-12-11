@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   post '/app/create' => 'chat_groups#create'
   get '/app/find' => 'chat_groups#find_application'
   patch '/app/update' => 'chat_groups#update'
-  get '/app/get' => 'chat_groups#find_applications'
+  get '/app/get/:page' => 'chat_groups#find_applications'
   get '/app/chats', to: 'chat_groups#get_chats'
 
   # Chats

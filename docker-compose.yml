@@ -1,0 +1,72 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    environment:
+     REDIS_URL: redis://redis:6379
+    restart: always
+
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 5256
+      MYSQL_DATABASE: chat_system_development
+      MYSQL_USER: instabug
+      MYSQL_PASSWORD: 5256
+    ports:
+      - "5000:3306"
+    restart: always
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    environment:
+      - discovery.type=single-node
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=UAIQfvAP60kscyx8MEfyI46C
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    restart: always
+
+  chat-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "sleep 20 && rm -f tmp/pids/server.pid && bundle exec rails db:create db:migrate && bundle exec rails s -b '0.0.0.0'"
+    volumes:
+      - .:/rails
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+      - db
+      - elasticsearch
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: mysql2://root:5256@db:3306/chat_system_development
+      ELASTICSEARCH_CLOUD_ID: 'My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyQxM2JlZGM0OWU5ODc0ZDQ0YjIwOTg0OTQ1MDA3Y2JiYyRlMmNkMTJkMjIzMDg0ZWFhOGNhNTUxNjNjMDBmZDU5ZA=='
+      ELASTICSEARCH_USER: 'elastic'
+      ELASTICSEARCH_PASSWORD: 'UAIQfvAP60kscyx8MEfyI46C'
+    restart: always
+
+  sidekiq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bundle exec sidekiq
+    volumes:
+      - .:/rails
+    depends_on:
+      - redis
+      - db
+      - elasticsearch
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: mysql2://root:5256@db:3306/chat_system_development
+      ELASTICSEARCH_CLOUD_ID: 'My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyQxM2JlZGM0OWU5ODc0ZDQ0YjIwOTg0OTQ1MDA3Y2JiYyRlMmNkMTJkMjIzMDg0ZWFhOGNhNTUxNjNjMDBmZDU5ZA=='
+      ELASTICSEARCH_USER: 'elastic'
+      ELASTICSEARCH_PASSWORD: 'UAIQfvAP60kscyx8MEfyI46C'
+    restart: always

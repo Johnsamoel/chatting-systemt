@@ -1,63 +1,79 @@
 class ChatGroupsController < ActionController::API
   require 'jwt'
-  before_action :validate_token_and_find_application, only: [:find_application, :update, :get_chats ]
+  before_action :validate_token_and_find_application, only: [:find_application, :update, :get_chats]
 
   def create
-    find_app = Application.find_by(name: application_params[:name])
+    begin
+      find_app = Application.find_by(name: application_params[:name])
 
-    if find_app
-      render json: { message: "Choose a different Name" }, status: :conflict
-    else
-      @application = Application.new(application_params)
-      @application.token = generate_jwt_token
-
-      if @application.save
-        render json: { token: @application.token, name: @application.name, id: @application.id }, status: :created
+      if find_app
+        render json: { error: "Choose a different Name", field: "name" }, status: :conflict
       else
-        render json: { error: @application.errors.full_messages }, status: :unprocessable_entity
+        @application = Application.new(application_params)
+        @application.token = generate_jwt_token
+
+        if @application.save
+          render json: { token: @application.token, name: @application.name, id: @application.id }, status: :created
+        else
+          render json: { error: "Failed to create application", errors: @application.errors.full_messages }, status: :unprocessable_entity
+        end
       end
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
 
   def update
-    updated_app = @found_application.update(name: application_params[:name])
+    begin
+      updated_app = @found_application.update(name: application_params[:name])
 
-    if updated_app
-      render json: { message: "Application was updated successfully", application: updated_app }
-    else
-      render json: { error: "Something went wrong. Your application failed to update." }
+      if updated_app
+        render json: { message: "Application was updated successfully" }
+      else
+        render json: { error: "Failed to update application", errors: @found_application.errors.full_messages }, status: :unprocessable_entity
+      end
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
 
   def find_applications
-    page = params[:page] || 1
-    per_page = params[:per_page] || 10
+    begin
+      page = params[:page] || 1
+      per_page = params[:per_page] || 10
 
-    applications = Application.paginate(page: page, per_page: per_page)
+      applications = Application.paginate(page: page, per_page: per_page)
 
-    if applications
-      render json: { applications: applications }
-    else
-      render json: {error: "something went wrong"} , status: :not_found
+      if applications.any?
+        render json: { applications: applications }
+      else
+        render json: { error: "No applications found" }, status: :not_found
+      end
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
-  
+
   def get_chats
-    page = params[:page] || 1
-    per_page = params[:per_page] || 10
-
-    chats = @found_application.chats.paginate(page: page, per_page: per_page)
-
-    if chats
-      render json: { chats: chats }
-    else
-      render json: {error: "something went wrong"} , status: :not_found
-    end
+    begin
+      page = params[:page] || 1
+      per_page = params[:per_page] || 10
   
+      chats = @found_application.chats.paginate(page: page, per_page: per_page)
+  
+      render json: { chats: chats }
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
+    end
   end
+  
 
   def find_application
-    render json: { application: @found_application }
+    begin
+      render json: { application: @found_application }
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
+    end
   end
 
   private
@@ -74,10 +90,15 @@ class ChatGroupsController < ActionController::API
 
   # Validates the token and finds the app
   def validate_token_and_find_application
-    token = params[:token]
-    @found_application = Application.find_by_token(token)
-    if @found_application.blank?
-      render json: { error: "Application not found or invalid token" }, status: :not_found
+    begin
+      token = params[:token]
+      @found_application = Application.find_by_token(token)
+
+      if @found_application.blank?
+        render json: { error: "Application not found or invalid token", field: "token" }, status: :not_found
+      end
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
 end

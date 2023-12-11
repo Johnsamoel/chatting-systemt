@@ -7,54 +7,67 @@ class ChatsController < ActionController::API
   before_action :validate_get_messages, only: [:get_messages]
 
 
-  def create
-    created_name = params.dig(:chat, :name)
-    CreateChatJob.perform_sync({ 'chat_name' => created_name, 'application_id' => @found_application.id } )
-    
-    redis = Redis.new
-    chat_number = redis.get("lastest_chat_number")
 
-    if chat_number
-      render json: { chat_number: chat_number }
-    else
-      render json: { error: "Chat wasn't created" }, status: :bad_request
+  def create
+    begin
+      created_name = params.dig(:chat, :name)
+      validate_create # Validate and set variables
+
+      CreateChatJob.perform_sync({ 'chat_name' => created_name, 'application_id' => @found_application.id })
+
+      redis = Redis.new
+      chat_number = redis.get("lastest_chat_number")
+
+      if chat_number
+        render json: { chat_number: chat_number }
+      else
+        render json: { error: "Chat wasn't created" }, status: :bad_request
+      end
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
 
-
   def update
+    begin
+      validate_update # Validate and set variables
 
-    update_chat_job = UpdateChatJob.perform_sync({
-      'name' => @chat_name,
-      'app_number' => @found_application.id,
-      'chat_number' => @chat_id
-    })
+      update_chat_job = UpdateChatJob.perform_sync({
+        'name' => @chat_name,
+        'app_number' => @found_application.id,
+        'chat_number' => @chat_id
+      })
 
-
-    if update_chat_job
-      render json: { message: "Chat updated successfully" }
-    else
-      render json: { error: "Failed to update chat", errors: @chat.errors.full_messages }, status: :unprocessable_entity
-    end
-  
+      if update_chat_job
+        render json: { message: "Chat updated successfully" }
+      else
+        render json: { error: "Failed to update chat", errors: @chat.errors.full_messages }, status: :unprocessable_entity
+      end
     rescue UpdateMessageJob::UpdateFailedError => e
-        render json: { error: "Chat update failed. Please try again later." }, status: :unprocessable_entity
-    
+      render json: { error: "Chat update failed. Please try again later: #{e.message}" }, status: :unprocessable_entity
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
+    end
   end
 
   def get_messages
-    page = params[:page] || 1
-    per_page = params[:per_page] || 10
+    begin
+      validate_get_messages # Validate and set variables
 
-    messages = @chat.messages.paginate(page: page, per_page: per_page)
+      page = params[:page] || 1
+      per_page = params[:per_page] || 10
 
-    render json: { messages: messages }
+      messages = @chat.messages.paginate(page: page, per_page: per_page)
+
+      render json: { messages: messages }
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
+    end
   end
-
   private
 
   def chat_params
-    params.require(:chat).permit(:name)
+    params.require(:chat).permit(:name , :token)
   end
 
 

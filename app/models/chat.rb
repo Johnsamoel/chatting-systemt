@@ -4,7 +4,7 @@ class Chat < ApplicationRecord
  
   has_many :messages
   
-  validates :chat_name, presence: true, length: { minimum: 4 }
+  # validates :chat_name, presence: true, length: { minimum: 4 }
   
   validates :lock_version, presence: true
 

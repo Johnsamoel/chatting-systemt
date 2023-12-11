@@ -1,10 +1,14 @@
 development:
-  hosts:
-    - 'http://localhost:9200'
-  apikey: 'VzFTYlJJd0JzVFl4ZjJMSXJRWDI6M01BMU5nNjlTT2UxUzhxZHZoYmJKUQ=='
+  cloud_id: 'My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyQxM2JlZGM0OWU5ODc0ZDQ0YjIwOTg0OTQ1MDA3Y2JiYyRlMmNkMTJkMjIzMDg0ZWFhOGNhNTUxNjNjMDBmZDU5ZA=='
+  user: 'elastic'
+  password: 'UAIQfvAP60kscyx8MEfyI46C'
 
 test:
-  host: 'localhost:9200'
+  cloud_id: 'My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyQxM2JlZGM0OWU5ODc0ZDQ0YjIwOTg0OTQ1MDA3Y2JiYyRlMmNkMTJkMjIzMDg0ZWFhOGNhNTUxNjNjMDBmZDU5ZA=='
+  user: 'elastic'
+  password: 'UAIQfvAP60kscyx8MEfyI46C'
 
 production:
-  host: 'your_production_elasticsearch_server:9200'
+  cloud_id: 'My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyQxM2JlZGM0OWU5ODc0ZDQ0YjIwOTg0OTQ1MDA3Y2JiYyRlMmNkMTJkMjIzMDg0ZWFhOGNhNTUxNjNjMDBmZDU5ZA=='
+  user: 'elastic'
+  password: 'UAIQfvAP60kscyx8MEfyI46C'

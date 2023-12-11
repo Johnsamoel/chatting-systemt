@@ -1,5 +1,3 @@
-require 'elasticsearch/model'
-
 class Message < ApplicationRecord
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
@@ -7,6 +5,8 @@ class Message < ApplicationRecord
   belongs_to :chat, counter_cache: true
 
   validates :lock_version, presence: true
+
+  validates :body, presence: true, length: { minimum: 1, maximum: 20 }
 
   def self.search(query, page: 1)
     size = 10
@@ -25,7 +25,6 @@ class Message < ApplicationRecord
     )
   end
 
-
   def update_with_optimistic_lock(attributes)
     update!(attributes)
   rescue ActiveRecord::StaleObjectError
@@ -33,5 +32,4 @@ class Message < ApplicationRecord
     reload
     retry
   end
-  
 end

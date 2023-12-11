@@ -7,58 +7,72 @@ class MessagesController < ActionController::API
   before_action :validate_update_message, only: [:update]
 
   def create
-    CreateMessageJob.perform_sync({
-      'body'=> @message_body,
-     'application_id' => @found_application.id,
-      'chat_id' => @chat.id,
-    })
+    begin
 
-    redis = Redis.new
-    message_number = redis.get("latest_message_number")
+      if @message_body.blank?
+        render json: { error: "The 'body' key is required and cannot be null or empty" }, status: :bad_request
+      else
+        CreateMessageJob.perform_sync({
+          'body' => @message_body,
+          'application_id' => @found_application.id,
+          'chat_id' => @chat.id,
+        })
 
-    if message_number
-      render json: { chat_number: message_number }
-    else
-      render json: { error: "Message wasn't created" }, status: :bad_request
+        redis = Redis.new
+        message_number = redis.get("latest_message_number")
+
+        if message_number
+          render json: { chat_number: message_number }
+        else
+          render json: { error: "Message wasn't created" }, status: :bad_request
+        end
+      end
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
-   
   end
-
+  
+  
   def search
-    @chat = Chat.find_by(application_id: @found_application.id, chat_number: @chat_id)
-  
-    page_number = @page_number.to_i
-    # Perform Elasticsearch search
-    @messages = Message.search(@message_body, page: @page_number.to_i)
-  
-    if @messages
-      render json: @messages
-    else
-      render json: { error: "Invalid search query" }, status: :not_found
+    begin
+      @chat = Chat.find_by(application_id: @found_application.id, chat_number: @chat_id)
+
+      page_number = @page_number.to_i
+      # Perform Elasticsearch search
+      @messages = Message.search(@message_body, page: @page_number.to_i)
+
+      if @messages
+        render json: @messages
+      else
+        render json: { error: "Invalid search query" }, status: :not_found
+      end
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
 
   def update
-    if @message_body.nil?
-      render json: { error: "Invalid message body" }, status: :bad_request
-    else
-      begin
-        updated_Message_status = UpdateMessageJob.perform_sync({
+    begin
+
+      if @message_body.blank?
+        render json: { error: "The 'body' key is required and cannot be null or empty" }, status: :bad_request
+      else
+        updated_message_status = UpdateMessageJob.perform_sync({
           'body' => @message_body,
           'message_number' => @message.id,
-          'chat_number' => @chat.id, 
+          'chat_number' => @chat.id,
         })
-  
-        if updated_Message_status
+
+        if updated_message_status
           render json: { message: "Message was updated successfully" }
         else
           render json: { error: "Something went wrong during the update. Please try again." }, status: :unprocessable_entity
         end
-      
-      rescue UpdateMessageJob::UpdateFailedError => e
-        render json: { error: "Message update failed. Please try again later." }, status: :unprocessable_entity
       end
-    
+    rescue UpdateMessageJob::UpdateFailedError => e
+      render json: { error: "Message update failed. Please try again later: #{e.message}" }, status: :unprocessable_entity
+    rescue StandardError => e
+      render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
   
@@ -94,7 +108,7 @@ class MessagesController < ActionController::API
   def validate_create_message
     token = params[:token]
     @message_id = params[:message_id]
-    @message_body = params[:message]
+    @message_body = params[:body]
     @chat_id = params[:chat_id]
 
     validate_token(token)
