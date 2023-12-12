@@ -17,9 +17,8 @@ Rails.application.routes.draw do
   post '/chat/messages/create' => 'messages#create' 
   get  '/chat/:chat_id/messages/search' => 'messages#search' 
   patch '/chat/:chat_id/messages/update' => 'messages#update'
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  # not found
+  match '*unmatched_route', to: 'errors#not_found', via: :all
+
 end

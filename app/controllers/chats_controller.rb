@@ -4,7 +4,7 @@ class ChatsController < ActionController::API
   require 'jwt'
   before_action :validate_create, only: [:create]
   before_action :validate_update, only: [:update]
-  before_action :validate_get_messages, only: [:get_messages]
+  # before_action :validate_get_messages, only: [:get_messages]
 
 
 
@@ -30,7 +30,6 @@ class ChatsController < ActionController::API
 
   def update
     begin
-      validate_update # Validate and set variables
 
       update_chat_job = UpdateChatJob.perform_sync({
         'name' => @chat_name,
@@ -52,34 +51,51 @@ class ChatsController < ActionController::API
 
   def get_messages
     begin
-      validate_get_messages # Validate and set variables
+      validate_get_messages
 
-      page = params[:page] || 1
+      @page = params[:page].to_i
+    
+      if !@page || @page <= 0
+        render json: { error: "Invalid parameter", field: "page_number" }, status: :bad_request
+        return
+      end
+  
       per_page = params[:per_page] || 10
-
-      messages = @chat.messages.paginate(page: page, per_page: per_page)
-
-      render json: { messages: messages }
+  
+      if @chat
+        messages = @chat.messages.paginate(page: @page, per_page: per_page) || []
+        render json: { messages: messages }
+      else
+        render json: { error: "Chat not found" }, status: :not_found
+      end
     rescue StandardError => e
       render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
+  
   private
 
-  def chat_params
-    params.require(:chat).permit(:name , :token)
-  end
-
-
-  def validate_get_messages
-    token = params[:token]
-    @chat_id = params[:chat_id]
-    validate_token(token)
-    @chat = Chat.find(@chat_id) if @chat_id
-    if !@chat
-      render json: {error: "Invalid token or chat id"} ,status: :not_found
+    def chat_params
+      params.require(:chat).permit(:name , :token)
     end
-  end
+
+
+    def validate_get_messages
+      token = params[:token]
+      @chat_id = params[:chat_id]
+      validate_token(token)
+      
+      if @chat_id.present?
+        @chat = Chat.find_by(id: @chat_id)
+      end
+    
+    
+      if !@chat
+        render json: { error: "Invalid token or chat id" }, status: :not_found
+        return
+      end
+    end
+    
 
     def validate_update
       token = params.dig(:chat, :token)
@@ -102,7 +118,7 @@ class ChatsController < ActionController::API
       @found_application = Application.find_by_token(token)
       
       unless @found_application
-        render json: { error: "Application not found or invalid token" }, status: :not_found
+        render json: { error: "Application not found or invalid token" }, status: :bad_request
       end
     end
 end

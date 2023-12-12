@@ -8,16 +8,27 @@ class Message < ApplicationRecord
 
   validates :body, presence: true, length: { minimum: 1, maximum: 20 }
 
-  def self.search(query, page: 1)
+  def self.search(query, chat_id, page: 1)
     size = 10
     from = (page - 1) * size
   
     __elasticsearch__.search(
       query: {
-        wildcard: {
-          body: {
-            value: "*#{query}*"
-          }
+        bool: {
+          must: [
+            {
+              wildcard: {
+                body: {
+                  value: "*#{query}*"
+                }
+              }
+            },
+            {
+              term: {
+                chat_id: chat_id
+              }
+            }
+          ]
         }
       },
       size: size,
@@ -27,9 +38,9 @@ class Message < ApplicationRecord
 
   def update_with_optimistic_lock(attributes)
     update!(attributes)
-  rescue ActiveRecord::StaleObjectError
-    # Handle the conflict, e.g., by reloading the record and trying again
-    reload
-    retry
+    rescue ActiveRecord::StaleObjectError
+      # Handle the conflict, e.g., by reloading the record and trying again
+      reload
+      retry
   end
 end

@@ -13,7 +13,7 @@ class ChatGroupsController < ActionController::API
         @application.token = generate_jwt_token
 
         if @application.save
-          render json: { token: @application.token, name: @application.name, id: @application.id }, status: :created
+          render json: { token: @application.token, name: @application.name }, status: :created
         else
           render json: { error: "Failed to create application", errors: @application.errors.full_messages }, status: :unprocessable_entity
         end
@@ -39,20 +39,25 @@ class ChatGroupsController < ActionController::API
 
   def find_applications
     begin
-      page = params[:page] || 1
-      per_page = params[:per_page] || 10
-
-      applications = Application.paginate(page: page, per_page: per_page)
-
-      if applications.any?
-        render json: { applications: applications }
+      page = params[:page].to_i
+  
+      if !page || page <= 0
+        render json: { error: "Invalid parameter", field: "page_number" }, status: :bad_request
       else
-        render json: { error: "No applications found" }, status: :not_found
+        per_page = params[:per_page] || 10
+        applications = Application.paginate(page: page, per_page: per_page)
+  
+        if applications.any?
+          render json: { applications: applications.map { |app| app.as_json(except: :id) } }
+        else
+          render json: { error: "No applications found" }, status: :not_found
+        end
       end
     rescue StandardError => e
       render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
   end
+    
 
   def get_chats
     begin
@@ -70,7 +75,7 @@ class ChatGroupsController < ActionController::API
 
   def find_application
     begin
-      render json: { application: @found_application }
+      render json: { application: @found_application.attributes.except('id') }
     rescue StandardError => e
       render json: { error: "An error occurred while processing your request: #{e.message}" }, status: :internal_server_error
     end
