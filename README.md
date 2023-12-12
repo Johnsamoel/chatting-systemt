@@ -11,8 +11,8 @@ A real-time chatting system built with Rails 7, MySQL, ElasticSearch, and Sideki
   - [Installation](#installation)
   - [Configuration](#configuration)
 - [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+- [API Documentations](#API-Documentations)
+
 
 ## Introduction
 
