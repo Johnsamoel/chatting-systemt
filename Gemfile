@@ -61,6 +61,11 @@ group :development do
   # gem "spring"
 end
 
+group :development, :test do
+  gem 'rspec-rails'
+end
+
+
 gem "elasticsearch-model", "~> 7.1"
 
 gem "searchkick", "~> 5.3"
