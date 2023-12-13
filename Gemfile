@@ -77,3 +77,5 @@ gem "redis", "~> 5.0"
 gem "rufus-scheduler", "~> 3.9"
 
 gem "faraday", "~> 2.7"
+
+gem "rack-attack", "~> 6.7"
