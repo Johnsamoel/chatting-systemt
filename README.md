@@ -39,14 +39,9 @@ Make sure you have the following installed on your system:
 
 ### Installation
 
-1. Clone the repository:
-
-    ```bash
-    git clone https://github.com/your-username/chatting-system.git
-    ```
+1. Clone the repository
 
 2. Add your MYSQL Database
-
 
 3. Install dependencies:
 
