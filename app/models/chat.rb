@@ -11,7 +11,7 @@ class Chat < ApplicationRecord
   def update_with_optimistic_lock(attributes)
     update!(attributes)
   rescue ActiveRecord::StaleObjectError
-    # Handle the conflict, e.g., by reloading the record and trying again
+    # Handle the conflict, by reloading the record and trying again
     reload
     retry
   end

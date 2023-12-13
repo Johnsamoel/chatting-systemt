@@ -53,13 +53,18 @@ class ChatsController < ActionController::API
     begin
       validate_get_messages
 
+      if !@chat
+        render json: { error: "Invalid token or chat id" }, status: :not_found
+        return
+      end
+
       @page = params[:page].to_i
     
       if !@page || @page <= 0
         render json: { error: "Invalid parameter", field: "page_number" }, status: :bad_request
         return
       end
-  
+
       per_page = params[:per_page] || 10
   
       if @chat
@@ -86,14 +91,9 @@ class ChatsController < ActionController::API
       validate_token(token)
       
       if @chat_id.present?
-        @chat = Chat.find_by(id: @chat_id)
+        @chat = @found_application.chats.find_by(id: @chat_id)
       end
     
-    
-      if !@chat
-        render json: { error: "Invalid token or chat id" }, status: :not_found
-        return
-      end
     end
     
 
