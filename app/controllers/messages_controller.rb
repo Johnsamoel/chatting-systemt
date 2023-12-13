@@ -22,7 +22,7 @@ class MessagesController < ActionController::API
         message_number = redis.get("latest_message_number")
 
         if message_number
-          render json: { chat_number: message_number }
+          render json: { message_number: message_number }
         else
           render json: { error: "Message wasn't created" }, status: :bad_request
         end
