@@ -11,8 +11,8 @@ A real-time chatting system built with Rails 7, MySQL, ElasticSearch, and Sideki
   - [Installation](#installation)
   - [Configuration](#configuration)
 - [Usage](#usage)
-- [Demo](#Demo)
-- [API Documentations](#API-Documentations)
+- [Demo Video](#DemoVideo)
+- [API Documentations](#APIDocumentations)
 
 
 ## Introduction
@@ -52,10 +52,6 @@ Make sure you have the following installed on your system:
 ### Configuration
 
 1. Configure the database:
-
-    ```bash
-    rails db:create
-    ```
 
     Update `config/database.yml` with your MySQL credentials.
 
