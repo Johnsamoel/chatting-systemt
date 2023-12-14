@@ -10,6 +10,7 @@ A real-time chatting system built with Rails 7, MySQL, ElasticSearch, and Sideki
 - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Configuration](#configuration)
+  - [Tests](#Tests)
 - [Usage](#usage)
 - [Demo Video](#DemoVideo)
 - [API Documentations](#APIDocumentations)
@@ -68,6 +69,10 @@ Make sure you have the following installed on your system:
 
 Visit `http://localhost:3000` in your browser.
 
+### Unit Tests:
+
+    Rspec
+ By Running this command your tests will run.
 ## Usage
 
 1. Create an Application.
