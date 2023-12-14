@@ -11,6 +11,7 @@ A real-time chatting system built with Rails 7, MySQL, ElasticSearch, and Sideki
   - [Installation](#installation)
   - [Configuration](#configuration)
 - [Usage](#usage)
+- [Demo](#Demo)
 - [API Documentations](#API-Documentations)
 
 
@@ -41,9 +42,7 @@ Make sure you have the following installed on your system:
 
 1. Clone the repository
 
-2. Add your MYSQL Database
-
-3. Install dependencies:
+2. Install dependencies:
 
     ```bash
     cd chatting-system
@@ -55,7 +54,7 @@ Make sure you have the following installed on your system:
 1. Configure the database:
 
     ```bash
-    cp config/database.yml.example config/database.yml
+    rails db:create
     ```
 
     Update `config/database.yml` with your MySQL credentials.
@@ -80,7 +79,8 @@ Visit `http://localhost:3000` in your browser.
 3. Utilize search functionalities powered by ElasticSearch.
 4. Background jobs are handled by Sidekiq for enhanced performance.
 
-
+### Demo Video
+Visit [Demo](https://www.veed.io/view/a19f6ca4-6749-43c5-8727-bb1f8689caea?panel=share) in ypur browser.
 
 ## API Documentations
 
